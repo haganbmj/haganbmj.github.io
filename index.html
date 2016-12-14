@@ -1,0 +1,73 @@
+<html>
+  <head>
+    <!-- <script type="text/javascript" src="obs-websocket.js"></script> -->
+    <script>
+      !function(){"use strict";function t(t){return new c(t.name,t.type,t.x,t.y,t.cx,t.cy,t.volume,t.render)}function e(t){return new u(t.name,t.sources)}function n(){return"undefined"!=typeof module&&"undefined"!=typeof module.exports}function o(){o.DEFAULT_PORT=4444,o.CONSOLE_NAME="[OBSWebSocket]",this._connected=!1,this._socket=void 0,this._requestCounter=0,this._responseCallbacks={},this._auth={salt:"",challenge:""}}function r(t){return unescape(encodeURIComponent(t))}function i(t){for(var e=new Uint8Array(t.length),n=0;n<t.length;n++)e[n]=t.charCodeAt(n);return e.buffer}function s(t){for(var e="",n=new Uint8Array(t),o=n.byteLength,r=0;o>r;r++)e+=String.fromCharCode(n[r]);return btoa(e)}!function(){function t(t,e,n,o,r,i,s,c){this.name="undefined"==typeof t?"":t,this.type="undefined"==typeof e?"":e,this.x=n||0,this.y=o||0,this.boundsX=r||0,this.boundsY=i||0,this.volume=s||0,this.visible=c||!1}"undefined"!=typeof module&&"undefined"!=typeof module.exports?module.exports.OBSSource=t:window.OBSSource=t}(),function(){function e(e,n){this.name="undefined"==typeof e?"":e,n="undefined"==typeof n?[]:n;var o=this;n.length>0&&!(n[0]instanceof c)&&(this.sources=[],n.forEach(function(e){o.sources.push(t(e))}))}"undefined"!=typeof module&&"undefined"!=typeof module.exports?module.exports.OBSScene=e:window.OBSScene=e}();var c={},u={};n()?(c=module.exports.OBSSource,u=module.exports.OBSScene):(c=window.OBSSource,u=window.OBSScene);var a={};a=n()?require("ws"):window.WebSocket,o.prototype._generateMessageId=function(){return this._requestCounter++,this._requestCounter+""},o.prototype._sendRequest=function(t,e,n){this._connected?(e=e||{},n=n||function(){},e["message-id"]=this._generateMessageId(),e["request-type"]=t,this._responseCallbacks[e["message-id"]]={requestType:t,callbackFunction:n},this._socket.send(JSON.stringify(e))):console.warn(o.CONSOLE_NAME,"Not connected.")},o.prototype._onMessage=function(t){var e=JSON.parse(t.data),n=null;if(e){var r=e["update-type"],i=e["message-id"];if("error"===e.status&&(console.error(o.CONSOLE_NAME,"Error:",e.error),n=e.error,e=null),r)e&&this._buildEventCallback(r,e);else{var s=this._responseCallbacks[i].callbackFunction;s&&s(n,e),delete this._responseCallbacks[i]}}},o.prototype._buildEventCallback=function(t,e){var n=this;switch(t){case"SwitchScenes":return void this.onSceneSwitch(e["scene-name"]);case"ScenesChanged":return void this.getSceneList(function(t){n.onSceneListChanged(t)});case"StreamStarting":return void this.onStreamStarting();case"StreamStarted":return void this.onStreamStarted();case"StreamStopping":return void this.onStreamStopping();case"StreamStopped":return void this.onStreamStopped();case"RecordingStarting":return void this.onRecordingStarting();case"RecordingStarted":return void this.onRecordingStarted();case"RecordingStopping":return void this.onRecordingStopping();case"RecordingStopped":return void this.onRecordingStopped();case"StreamStatus":return e.bytesPerSecond=e["bytes-per-sec"],e.totalStreamTime=e["total-stream-time"],e.numberOfFrames=e["num-total-frames"],e.numberOfDroppedFrames=e["num-dropped-frames"],void this.onStreamStatus(e);case"Exiting":return void this.onExit();default:console.warn(o.CONSOLE_NAME,"Unknown UpdateType:",t,e)}},n()?module.exports.OBSWebSocket=o:window.OBSWebSocket=o,o.prototype._webCryptoHash=function(t,e){var n=this,o=r(t),c=r(this._auth.salt),u=i(o+c);p.subtle.digest("SHA-256",u).then(function(t){var o=r(s(t)),c=r(n._auth.challenge),u=i(o+c);p.subtle.digest("SHA-256",u).then(function(t){var n=s(t);e(n)})})},o.prototype._cryptoJSHash=function(t,e){var n=r(t),o=r(this._auth.salt),i=CryptoJS.SHA256(n+o).toString(CryptoJS.enc.Base64),s=r(i),c=r(this._auth.challenge),u=CryptoJS.SHA256(s+c).toString(CryptoJS.enc.Base64);e(u)},o.prototype._nodeCryptoHash=function(t,e){var n=p.createHash("sha256"),o=r(t),i=r(this._auth.salt);n.update(o+i);var s=n.digest("base64"),c=p.createHash("sha256"),u=r(s),a=r(this._auth.challenge);c.update(u+a);var d=c.digest("base64");e(d)};var p={};if(n())p=require("crypto"),o.prototype._authHash=o.prototype._nodeCryptoHash;else if(p=window.crypto||window.msCrypto||{},o.prototype._authHash=o.prototype._webCryptoHash,"undefined"==typeof p.subtle)if("undefined"==typeof p.webkitSubtle){if("undefined"==typeof CryptoJS)throw new Error("OBS WebSocket requires CryptoJS when native crypto is unavailable.");o.prototype._authHash=o.prototype._cryptoJSHash}else p.subtle=p.webkitSubtle;o.prototype.onConnectionOpened=function(){},o.prototype.onConnectionClosed=function(){},o.prototype.onConnectionFailed=function(){},o.prototype.onAuthenticationSuccess=function(){},o.prototype.onAuthenticationFailure=function(){},o.prototype.onSceneSwitch=function(t){},o.prototype.onSceneListChanged=function(t){},o.prototype.onStreamStarting=function(){},o.prototype.onStreamStarted=function(){},o.prototype.onStreamStopping=function(){},o.prototype.onStreamStopped=function(){},o.prototype.onRecordingStarting=function(){},o.prototype.onRecordingStarted=function(){},o.prototype.onRecordingStopping=function(){},o.prototype.onRecordingStopped=function(){},o.prototype.onStreamStatus=function(t){},o.prototype.onExit=function(){},o.prototype.getVersion=function(t){function e(e,n){n&&(n.obsStudioVersion=n["obs-studio-version"],n.obsWebSocketVersion=n["obs-websocket-version"]),t(e,n)}this._sendRequest("GetVersion",{},e)},o.prototype.getAuthRequired=function(t){this._sendRequest("GetAuthRequired",{},t)},o.prototype.authenticate=function(t){t=t||"";var e=this;this._authHash(t,function(t){e._sendRequest("Authenticate",{auth:t},function(t,n){return t?(console.error(o.CONSOLE_NAME,"Authentication Failure.",t),void e.onAuthenticationFailure()):(console.info(o.CONSOLE_NAME,"Authentication Success."),void e.onAuthenticationSuccess())})})},o.prototype.connect=function(t,e){t=t||"localhost",e=e||"",t+=t.indexOf(":")>0?"":":"+o.DEFAULT_PORT;var n=this;this._connected&&(this._socket.close(),this._connected=!1),this._socket=new a("ws://"+t),this._socket.onopen=function(){n._connected=!0,n.onConnectionOpened(),n.getAuthRequired(function(t,o){t||o.authRequired&&(n._auth.salt=o.salt,n._auth.challenge=o.challenge,n.authenticate(e))})},this._socket.onclose=function(){n._connected&&n.onConnectionClosed(),n._connected=!1},this._socket.onerror=function(t){n.onConnectionFailed(t),n._connected=!1},this._socket.onmessage=function(t){n._onMessage(t)}},o.prototype.disconnect=function(){this._socket.close()},o.prototype.getCurrentScene=function(t){function n(n,o){o&&(o=e(o)),t(n,o)}this._sendRequest("GetCurrentScene",{},n)},o.prototype.setCurrentScene=function(t){this._sendRequest("SetCurrentScene",{"scene-name":t})},o.prototype.getSceneList=function(t){function n(n,o){o&&(o.currentScene=o["current-scene"],o.scenes=Object.keys(o.scenes).map(function(t){return e(o.scenes[t])})),t(n,o)}this._sendRequest("GetSceneList",{},n)},o.prototype.setSourceVisbility=function(t,e){this._sendRequest("SetSourceVisibility",{source:t,render:e})},o.prototype.toggleStreaming=function(){this._sendRequest("StartStopStreaming")},o.prototype.startStreaming=function(){},o.prototype.stopStreaming=function(){},o.prototype.startStopRecording=function(){this._sendRequest("StartStopRecording")},o.prototype.startRecording=function(){},o.prototype.stopRecording=function(){},o.prototype.getStreamStatus=function(t){function e(e,n){n&&(n.previewOnly=n["preview-only"],n.bytesPerSec=n["bytes-per-sec"],n.totalStreamTime=n["total-stream-time"],n.numTotalFrames=n["num-total-frames"],n.numDroppedFrames=n["num-dropped-frames"]),t(e,n)}this._sendRequest("GetStreamingStatus",{},e)},o.prototype.getTransitionList=function(t){function e(e,n){n&&(n.currentTransition=n["current-transition"]),t(e,n)}this._sendRequest("GetTransitionList",{},e)},o.prototype.getCurrentTransition=function(t){this._sendRequest("GetCurrentTransition",{},t)},o.prototype.setCurrentTransition=function(t){this._sendRequest("SetCurrentTransition",{"transition-name":t})}}();
+    </script>
+
+    <script>
+      var address = '';
+      var numberOfConnections = 0;
+      var delayBetweenConnections = 0;
+      var discoImmediately = false;
+      var delayBetweenDisconnects = 0;
+      var i = 0;
+
+      function doTheShit() {
+        address = document.getElementById('address').value;
+        numberOfConnections = document.getElementById('numberOfConnections').value;
+        delayBetweenConnections = document.getElementById('delayBetweenConnections').value;
+        discoImmediately = document.getElementById('disco').checked;
+        delayBetweenDisconnects = document.getElementById('delayBetweenDisconnects').value;
+        i = 0;
+
+        iterateThatShit();
+      }
+
+      function iterateThatShit() {
+        if (i < numberOfConnections) {
+          connectThatShit(i + 1);
+          setTimeout(iterateThatShit, delayBetweenConnections);
+        }
+        i++;
+      }
+
+      function connectThatShit(i) {
+        var ws = new OBSWebSocket();
+        ws.onConnectionOpened = function() {
+          appendMessage('Connection #' + i + ' opened');
+
+          if (discoImmediately) {
+            ws.onConnectionClosed = function() {
+              appendMessage('Connection #' + i + ' closed');
+            }
+
+            setTimeout(function() {
+              ws.disconnect();
+            }, delayBetweenDisconnects);
+          }
+        }
+        ws.connect(address);
+      }
+
+      function appendMessage(message) {
+        document.getElementById('console').insertAdjacentHTML('afterend',
+          '<div>' +
+            (new Date()).toISOString() + '&nbsp;&nbsp;&nbsp;' +
+            message +
+          '</div>'
+        );
+      }
+    </script>
+  </head>
+  <body>
+    <div>Address <input id="address" type="text"></div>
+    <div>Number of Connections <input id="numberOfConnections" type="number" min="1" value="1"></div>
+    <div>Delay between each Connection (ms) <input id="delayBetweenConnections" type="number" min="0" value="0"></div>
+    <div>Disconnect <input id="disco" type="checkbox"></div>
+    <div>Delay before each Disconnect (ms) <input id="delayBetweenDisconnects" type="number" min="0" value="0"></div>
+    <button onclick="doTheShit()">Go</button>
+
+    <div id="console" style="margin-top:25px;"></div>
+  </body>
+</html>
